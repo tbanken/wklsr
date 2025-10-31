@@ -39,8 +39,16 @@ CITY_QUERY <- "
 #' Initialize the wkls table
 #' @keywords internal
 .initialize_table <- function() {
+  # Check if connection exists AND is valid
   if (exists("con", envir = .wkls_env)) {
-    return(invisible(NULL))
+    tryCatch({
+      # Test if connection is still valid
+      dbExecute(.wkls_env$con, "SELECT 1")
+      return(invisible(NULL))
+    }, error = function(e) {
+      # Connection is invalid, remove it and recreate
+      rm("con", envir = .wkls_env)
+    })
   }
 
   # Create DuckDB connection
@@ -78,7 +86,8 @@ CITY_QUERY <- "
 }
 
 # Initialize on load
-.initialize_table()
+# Don't initialize immediately - let it happen on first use
+# .initialize_table()
 
 #' Internal function to resolve a chain
 #' @keywords internal
