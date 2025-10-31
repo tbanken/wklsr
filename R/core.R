@@ -54,12 +54,8 @@ CITY_QUERY <- "
   # 3. If running as a script (not installed package), look in local folders
   if (data_path == "" || !file.exists(data_path)) {
     # Try inst/extdata relative to source
-    if (file.exists("inst/extdata/overture.zstd18.parquet")) {
-      data_path <- "inst/extdata/overture.zstd18.parquet"
-    } else if (file.exists("inst/data/overture.zstd18.parquet")) {
-      data_path <- "inst/data/overture.zstd18.parquet"
-    } else if (file.exists("data/overture.zstd18.parquet")) {
-      data_path <- "data/overture.zstd18.parquet"
+    if (file.exists("R/inst/extdata/overture.zstd18.parquet")) {
+      data_path <- "R/inst/extdata/overture.zstd18.parquet"
     } else {
       stop("Could not find overture.zstd18.parquet data file. Please ensure it is placed in inst/extdata/ directory before building the package.")
     }

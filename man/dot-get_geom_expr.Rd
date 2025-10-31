@@ -2,11 +2,11 @@
 % Please edit documentation in R/core.R
 \name{.get_geom_expr}
 \alias{.get_geom_expr}
-\title{Get geometry expression from S3}
+\title{Internal function to get geometry}
 \usage{
-.get_geom_expr(wkls_obj, expr)
+.get_geom_expr(chain, expr)
 }
 \description{
-Get geometry expression from S3
+Internal function to get geometry
 }
 \keyword{internal}
