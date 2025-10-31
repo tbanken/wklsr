@@ -1,5 +1,9 @@
 # wkls.R - R implementation of the wkls library
 
+#' @importFrom DBI dbConnect dbDisconnect dbExecute dbGetQuery
+#' @importFrom duckdb duckdb
+NULL
+
 library(duckdb)
 
 # Package environment to store connection
