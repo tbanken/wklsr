@@ -89,6 +89,14 @@ CITY_QUERY <- "
 # Don't initialize immediately - let it happen on first use
 # .initialize_table()
 
+#' Package load hook
+#' @param libname Library name
+#' @param pkgname Package name
+#' @keywords internal
+.onLoad <- function(libname, pkgname) {
+  .initialize_table()
+}
+
 #' Internal function to resolve a chain
 #' @keywords internal
 .resolve_chain <- function(chain) {
