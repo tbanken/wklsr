@@ -44,23 +44,11 @@ CITY_QUERY <- "
 
   # Get path to data file - try multiple locations
   # 1. Try inst/extdata (standard R package location for external data)
-  data_path <- system.file("extdata", "overture.zstd18.parquet", package = "wklsr")
+  data_path <- system.file("extdata", "overture.zstd18.parquet", package = "wklsr", mustWork = TRUE)
 
-  # 2. If not found, try inst/data
-  if (data_path == "" || !file.exists(data_path)) {
-    data_path <- system.file("data", "overture.zstd18.parquet", package = "wklsr")
-  }
 
-  # 3. If running as a script (not installed package), look in local folders
-  if (data_path == "" || !file.exists(data_path)) {
-    # Try inst/extdata relative to source
-    print(file.exists("inst/extdata/overture.zstd18.parquet"))
-    if (file.exists("inst/extdata/overture.zstd18.parquet")) {
-      data_path <- "inst/extdata/overture.zstd18.parquet"
-    } else {
-      stop("Could not find overture.zstd18.parquet data file. Please ensure it is placed in inst/extdata/ directory before building the package.")
-    }
-  }
+
+
 
   # Install and load extensions, configure S3, and create table
   dbExecute(.wkls_env$con, "INSTALL spatial")
