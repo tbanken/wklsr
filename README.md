@@ -40,23 +40,23 @@ After installing `wklsr`, run the following commands to get started:
 library(wklsr)
 
 # Get country geometry
-usa_wkt = wkls$us$wkt()
-print(f"USA geometry: {usa_wkt[:50]}...")
+usa_wkt <- wkls$us$wkt()
+print(sprintf("USA geometry: %s...", substr(usa_wkt, 1, 50)))
 
 # Get state/region geometry
-california_geojson = wkls$us$ca$geojson()
+california_geojson <- wkls$us$ca$geojson()
 
 # Get city geometry
-sf_svg = wkls$us$ca$sanfrancisco$svg()
+sf_svg <- wkls$us$ca$sanfrancisco$svg()
 
 # Check dataset version
-print(f"Using Overture Maps data: {wkls$overture_version()}")
+print(sprintf("Using Overture Maps data: %s", wkls$overture_version()))
 
 # Explore available data
-print(f"Countries: {length(wkls$countries())}")
-print(f"Dependencies: {length(wkls$dependencies())}")
-print(f"US regions: {length(wkls$us$regions())}")
-print(f"CA counties: {length(wkls$us$ca$counties())}")
+print(sprintf("Countries: %d", nrow(wkls$countries())))
+print(sprintf("Dependencies: %d", nrow(wkls$dependencies())))
+print(sprintf("US regions: %d", nrow(wkls$us$regions())))
+print(sprintf("CA counties: %d", nrow(wkls$us$ca$counties())))
 ```
 
 ## Handling namespace collisions
