@@ -179,7 +179,7 @@ print.wkls_proxy <- function(x, ...) {
 
   # Method names
   method_names <- c("wkt", "wkb", "hexwkb", "geojson", "svg",
-                    "countries", "regions", "counties", "cities", "subtypes",
+                    "countries", "dependencies", "regions", "counties", "cities", "subtypes",
                     "overture_version")
 
   if (name %in% method_names) {
@@ -211,6 +211,18 @@ print.wkls_proxy <- function(x, ...) {
           SELECT DISTINCT id, country, subtype, name
           FROM wkls
           WHERE subtype = 'country'
+        ")
+      })
+    } else if (name == "dependencies") {
+      return(function() {
+        if (length(current_chain) > 0) {
+          stop("dependencies() can only be called on the root object.")
+        }
+        .initialize_table()
+        dbGetQuery(.wkls_env$con, "
+          SELECT DISTINCT id, country, subtype, name
+          FROM wkls
+          WHERE subtype = 'dependency'
         ")
       })
     } else if (name == "regions") {
