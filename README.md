@@ -132,7 +132,7 @@ print(wkls$overture_version())
 
 ## How It Works
 
-`wkls` works in two stages:
+`wklsr` works in two stages:
 
 ### 1. In-memory GERS ID resolution
 
@@ -142,7 +142,7 @@ Your chained attributes — up to 3 levels — are parsed in this order:
 2. `region` → matched using region code suffix as specified by Overture (e.g. `"ca"` → `"US-CA"`)
 3. `place` → fuzzy-matched against names in subtypes: `county`, `locality`, or `neighborhood`
 
-This resolves to a Pandas DataFrame containing one or more rows from the in-memory wkls metadata table. At this stage, no geometry is loaded yet — only metadata (like id, name, region, subtype, etc.).
+This resolves to a wkls_proxy object containing metadata from the in-memory wkls table (stored in DuckDB). At this stage, no geometry is loaded yet — only metadata (like id, name, region, subtype, etc.) is queried from the database. When you print the proxy object or call a geometry method, the actual data is retrieved via `dbGetQuery()`.
 
 ### 2.  Geometry lookup using DuckDB
 
@@ -154,7 +154,7 @@ The geometry lookup is triggered only when you call one of the geometry methods:
 - `$geojson()`
 - `$svg()`
 
-At that point, `wkls` uses the previously resolved **GERS ID** to query the Overture **division_area** GeoParquet directly from S3.
+At that point, `wklsr` uses the previously resolved **GERS ID** to query the Overture **division_area** GeoParquet directly from S3.
 
 The current Overture Maps dataset version can be checked with `wkls$overture_version()`.
 
@@ -163,7 +163,7 @@ The current Overture Maps dataset version can be checked with `wkls$overture_ver
 ## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENCE) file for details.
-`wkls` includes, references, and leverages data from the "Divisions" theme of [Overture](https://overturemaps.org), from Overture Maps Foundation:
+`wklsr` includes, references, and leverages data from the "Divisions" theme of [Overture](https://overturemaps.org), from Overture Maps Foundation:
 
  * © OpenStreetMap contributors. Available under the [Open Database License](https://www.openstreetmap.org/copyright).
  * [geoBoundaries](https://www.geoboundaries.org/). Available under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
