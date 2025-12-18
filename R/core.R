@@ -10,8 +10,8 @@ library(duckdb)
 .wkls_env <- new.env()
 
 # Overture Maps dataset version
-OVERTURE_VERSION <- "2025-09-24.0"
-S3_PARQUET_PATH <- sprintf("s3://overturemaps-us-west-2/release/%s/theme=divisions/type=division_area/*",
+OVERTURE_VERSION <- "2025-11-19.0"
+HF_PARQUET_PATH <- sprintf("hf://datasets/wherobots/overturemaps-us-west-2/release/%s/theme=divisions/type=division_area/*",
                            OVERTURE_VERSION)
 
 # SQL Queries
@@ -138,7 +138,7 @@ CITY_QUERY <- "
     SELECT %s
     FROM parquet_scan('%s')
     WHERE id = '%s'
-  ", expr, S3_PARQUET_PATH, geom_id)
+  ", expr, HF_PARQUET_PATH, geom_id)
 
   result_df <- dbGetQuery(.wkls_env$con, query)
   if (nrow(result_df) == 0) {
@@ -183,27 +183,27 @@ print.wkls_proxy <- function(x, ...) {
                     "overture_version")
 
   if (name %in% method_names) {
-    # Return a function bound to this chain
-    chain <- x$chain
+    # FIXED: Use attr() to access chain instead of x$chain to avoid recursive $ call
+    current_chain <- attr(x, "wkls_chain", exact = TRUE)
 
     if (name == "wkt") {
-      return(function() .get_geom_expr(chain, "ST_AsText(geometry)"))
+      return(function() .get_geom_expr(current_chain, "ST_AsText(geometry)"))
     } else if (name == "wkb") {
-      return(function() .get_geom_expr(chain, "ST_AsWKB(geometry)"))
+      return(function() .get_geom_expr(current_chain, "ST_AsWKB(geometry)"))
     } else if (name == "hexwkb") {
-      return(function() .get_geom_expr(chain, "ST_AsHEXWKB(geometry)"))
+      return(function() .get_geom_expr(current_chain, "ST_AsHEXWKB(geometry)"))
     } else if (name == "geojson") {
-      return(function() .get_geom_expr(chain, "ST_AsGeoJSON(geometry)"))
+      return(function() .get_geom_expr(current_chain, "ST_AsGeoJSON(geometry)"))
     } else if (name == "svg") {
       return(function(relative = FALSE, precision = 15L) {
         expr <- sprintf("ST_AsSVG(geometry, %s, %d)",
                         tolower(as.character(relative)),
                         as.integer(precision))
-        .get_geom_expr(chain, expr)
+        .get_geom_expr(current_chain, expr)
       })
     } else if (name == "countries") {
       return(function() {
-        if (length(chain) > 0) {
+        if (length(current_chain) > 0) {
           stop("countries() can only be called on the root object.")
         }
         .initialize_table()
@@ -215,11 +215,11 @@ print.wkls_proxy <- function(x, ...) {
       })
     } else if (name == "regions") {
       return(function() {
-        if (length(chain) != 1) {
+        if (length(current_chain) != 1) {
           stop("regions() requires exactly one level of chaining. Use wkls$country$regions()")
         }
         .initialize_table()
-        country_iso <- toupper(chain[1])
+        country_iso <- toupper(current_chain[1])
         dbGetQuery(.wkls_env$con, sprintf("
           SELECT * FROM wkls
           WHERE country = '%s' AND subtype = 'region'
@@ -227,12 +227,12 @@ print.wkls_proxy <- function(x, ...) {
       })
     } else if (name == "counties") {
       return(function() {
-        if (length(chain) != 2) {
+        if (length(current_chain) != 2) {
           stop("counties() requires exactly two levels of chaining. Use wkls$country$region$counties()")
         }
         .initialize_table()
-        country_iso <- toupper(chain[1])
-        region_iso <- paste0(country_iso, "-", toupper(chain[2]))
+        country_iso <- toupper(current_chain[1])
+        region_iso <- paste0(country_iso, "-", toupper(current_chain[2]))
         dbGetQuery(.wkls_env$con, sprintf("
           SELECT * FROM wkls
           WHERE country = '%s' AND region = '%s' AND subtype = 'county'
@@ -240,12 +240,12 @@ print.wkls_proxy <- function(x, ...) {
       })
     } else if (name == "cities") {
       return(function() {
-        if (length(chain) != 2) {
+        if (length(current_chain) != 2) {
           stop("cities() requires exactly two levels of chaining. Use wkls$country$region$cities()")
         }
         .initialize_table()
-        country_iso <- toupper(chain[1])
-        region_iso <- paste0(country_iso, "-", toupper(chain[2]))
+        country_iso <- toupper(current_chain[1])
+        region_iso <- paste0(country_iso, "-", toupper(current_chain[2]))
         dbGetQuery(.wkls_env$con, sprintf("
           SELECT * FROM wkls
           WHERE country = '%s' AND region = '%s' AND subtype IN ('locality', 'localadmin')
@@ -253,7 +253,7 @@ print.wkls_proxy <- function(x, ...) {
       })
     } else if (name == "subtypes") {
       return(function() {
-        if (length(chain) > 0) {
+        if (length(current_chain) > 0) {
           stop("subtypes() can only be called on the root object.")
         }
         .initialize_table()
@@ -261,7 +261,7 @@ print.wkls_proxy <- function(x, ...) {
       })
     } else if (name == "overture_version") {
       return(function() {
-        if (length(chain) > 0) {
+        if (length(current_chain) > 0) {
           stop("overture_version() is only available at the root level.")
         }
         OVERTURE_VERSION

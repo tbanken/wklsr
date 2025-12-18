@@ -69,7 +69,7 @@ Examples:
 wkls$us$wkt()                          # country: United States
 wkls$us$ca$wkt()                       # region: California
 wkls$us$ca$sanfrancisco$wkt()          # city/county: San Francisco
-wkls["us"]["ca"]["sanfrancisco"]$wkt() # dictionary-style access
+wkls[["us"]][["ca"]][["sanfrancisco"]]$wkt() # dictionary-style access
 ```
 
 #### Supported formats
