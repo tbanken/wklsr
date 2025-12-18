@@ -1,9 +1,3 @@
----
-editor_options: 
-  markdown: 
-    wrap: 72
----
-
 # `wklsr`: Well-Known Locations for R
 
 [![License: Apache
