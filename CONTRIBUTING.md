@@ -50,8 +50,17 @@ renv::restore()
 # Run tests
 devtools::test()
 
+# Load package locally to test in file(recommended over building package)
+devtools::load_all()
+
+# Build package
+devtools::build()
+
 # Run specific test file  
 devtools::test_file("tests/testthat/test-us.R")
+
+# Load package locally to test in file(recommended over building package)
+devtools::load_all()
 ```
 
 
