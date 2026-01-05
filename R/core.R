@@ -2,6 +2,7 @@
 
 #' @importFrom DBI dbConnect dbDisconnect dbExecute dbGetQuery
 #' @importFrom duckdb duckdb
+#' @importFrom utils head
 NULL
 
 library(duckdb)
@@ -17,6 +18,9 @@ HF_PARQUET_PATH <- sprintf("hf://datasets/wherobots/overturemaps-us-west-2/relea
 # ============================================================================
 # SQL Query Templates
 # ============================================================================
+# REFACTOR REASON: Centralized query definitions make it easier to maintain
+# and understand the data access patterns. Pattern queries are separated
+# from exact-match queries for clarity.
 
 COUNTRY_OR_DEPENDENCY_QUERY <- "
     SELECT * FROM wkls
@@ -93,8 +97,8 @@ DEPENDENCY_CITY_QUERY_PATTERN <- "
   # Create DuckDB connection
   .wkls_env$con <- dbConnect(duckdb::duckdb())
 
-  # Get path to data file
-  data_path <- system.file("extdata", "overture.zstd18.parquet", package = "wklsr", mustWork = TRUE)
+  # URL to the data file on GitHub
+  data_url <- "https://raw.githubusercontent.com/tbanken/wklsr/refs/heads/main/inst/extdata/overture.zstd18.parquet"
 
   # Install and load extensions, configure S3
   dbExecute(.wkls_env$con, "INSTALL spatial")
@@ -109,12 +113,12 @@ DEPENDENCY_CITY_QUERY_PATTERN <- "
   dbExecute(.wkls_env$con, "SET s3_endpoint='s3.amazonaws.com'")
   dbExecute(.wkls_env$con, "SET s3_use_ssl=true")
 
-  # Create table from parquet file
+  # Create table from remote parquet file
   query <- sprintf("
     CREATE TABLE IF NOT EXISTS wkls AS
     SELECT id, country, region, subtype, name_primary, name_en
     FROM '%s'
-  ", data_path)
+  ", data_url)
 
   dbExecute(.wkls_env$con, query)
 }
@@ -130,6 +134,8 @@ DEPENDENCY_CITY_QUERY_PATTERN <- "
 # ============================================================================
 # Helper Functions
 # ============================================================================
+# REFACTOR REASON: Extracted common logic to reduce duplication and improve
+# maintainability. Each helper function has a single, clear responsibility.
 
 #' Check if a country code represents a dependency
 #' @keywords internal
@@ -169,6 +175,8 @@ DEPENDENCY_CITY_QUERY_PATTERN <- "
 
 #' Internal function to resolve a chain
 #' @keywords internal
+#' REFACTOR REASON: Simplified branching logic by extracting dependency check
+#' and using consistent parameter passing patterns.
 .resolve_chain <- function(chain, is_pattern = FALSE) {
   .initialize_table()
 
@@ -270,6 +278,12 @@ DEPENDENCY_CITY_QUERY_PATTERN <- "
 }
 
 #' Print method for wkls_proxy
+#'
+#' Prints the resolved data frame for a wkls_proxy chain
+#'
+#' @param x A wkls_proxy object
+#' @param ... Additional arguments (unused)
+#' @return Invisibly returns the resolved data frame
 #' @export
 print.wkls_proxy <- function(x, ...) {
   chain <- attr(x, "wkls_chain", exact = TRUE)
@@ -281,14 +295,27 @@ print.wkls_proxy <- function(x, ...) {
 # ============================================================================
 # Data Frame Compatibility Methods
 # ============================================================================
+# REFACTOR REASON: These methods make the proxy behave like a data frame
+# for common operations without requiring explicit conversion.
 
 #' Check if object is a wkls_proxy
+#'
+#' S3 method that identifies wkls_proxy objects as data frames
+#'
+#' @param x A wkls_proxy object
+#' @return A logical value: always returns TRUE for wkls_proxy objects
 #' @export
 is.data.frame.wkls_proxy <- function(x) {
   TRUE
 }
 
-#' Convert wkls_proxy to data frame (explicit conversion)
+#' Convert wkls_proxy to data frame
+#'
+#' Explicitly converts a wkls_proxy to a data frame by resolving the chain
+#'
+#' @param x A wkls_proxy object
+#' @param ... Additional arguments (unused)
+#' @return A data frame with columns: id, country, region, subtype, name
 #' @export
 as.data.frame.wkls_proxy <- function(x, ...) {
   chain <- attr(x, "wkls_chain", exact = TRUE)
@@ -296,41 +323,86 @@ as.data.frame.wkls_proxy <- function(x, ...) {
 }
 
 #' Get number of rows
+#'
+#' Returns the number of rows in the resolved data
+#'
+#' @param x A wkls_proxy object
+#' @return An integer representing the number of rows, or 0L for empty chains
 #' @export
 nrow.wkls_proxy <- function(x) {
   chain <- attr(x, "wkls_chain", exact = TRUE)
+  if (length(chain) == 0) {
+    return(0L)
+  }
   df <- .resolve_chain(chain)
   nrow(df)
 }
 
 #' Get number of columns
+#'
+#' Returns the number of columns in the resolved data
+#'
+#' @param x A wkls_proxy object
+#' @return An integer representing the number of columns, or 0L for empty chains
 #' @export
 ncol.wkls_proxy <- function(x) {
   chain <- attr(x, "wkls_chain", exact = TRUE)
+  if (length(chain) == 0) {
+    return(0L)
+  }
   df <- .resolve_chain(chain)
   ncol(df)
 }
 
 #' Get dimensions
+#'
+#' Returns the dimensions (rows and columns) of the resolved data
+#'
+#' @param x A wkls_proxy object
+#' @return An integer vector of length 2 giving rows and columns,
+#'   or c(0L, 0L) for empty chains
 #' @export
 dim.wkls_proxy <- function(x) {
   chain <- attr(x, "wkls_chain", exact = TRUE)
+  if (length(chain) == 0) {
+    return(c(0L, 0L))
+  }
   df <- .resolve_chain(chain)
   dim(df)
 }
 
 #' Get column names
+#'
+#' Returns the column names of the resolved data
+#'
+#' @param x A wkls_proxy object
+#' @return A character vector of column names, typically:
+#'   "id", "country", "region", "subtype", "name"
 #' @export
 names.wkls_proxy <- function(x) {
   chain <- attr(x, "wkls_chain", exact = TRUE)
+  if (length(chain) == 0) {
+    return(character(0))
+  }
   df <- .resolve_chain(chain)
   names(df)
 }
 
 #' Extract rows/columns like a data frame
+#'
+#' Allows subsetting the resolved data
+#'
+#' @param x A wkls_proxy object
+#' @param i Row indices
+#' @param j Column indices
+#' @param drop Whether to drop dimensions
+#' @return A subset of the resolved data frame
 #' @export
 `[.wkls_proxy` <- function(x, i, j, drop = TRUE) {
   chain <- attr(x, "wkls_chain", exact = TRUE)
+  if (length(chain) == 0) {
+    stop("Cannot extract from empty wkls object")
+  }
   df <- .resolve_chain(chain)
   df[i, j, drop = drop]
 }
@@ -338,6 +410,8 @@ names.wkls_proxy <- function(x) {
 # ============================================================================
 # Geometry Method Builders
 # ============================================================================
+# REFACTOR REASON: Extracted method creation into helper functions to reduce
+# duplication in the $ operator. Each geometry method follows the same pattern.
 
 #' Create a geometry method closure
 #' @keywords internal
@@ -354,6 +428,8 @@ names.wkls_proxy <- function(x) {
 
 #' Create a helper method (countries, regions, etc.)
 #' @keywords internal
+#' REFACTOR REASON: Helper methods follow similar validation and query patterns.
+#' This function reduces duplication while keeping the validation logic clear.
 .make_helper_method <- function(chain,
                                 expected_levels,
                                 error_msg,
@@ -370,7 +446,15 @@ names.wkls_proxy <- function(x) {
 # Main Operators
 # ============================================================================
 
-#' $ operator for wkls_proxy
+#' Dollar operator for wkls_proxy
+#'
+#' Provides access to chaining attributes and methods
+#'
+#' @param x A wkls_proxy object
+#' @param name Name of attribute or method to access
+#' @return Depends on usage: a wkls_proxy object for chaining, a function
+#'   for methods (wkt, wkb, etc.), or a data frame for helper methods
+#'   (countries, regions, etc.)
 #' @export
 `$.wkls_proxy` <- function(x, name) {
   chain <- attr(x, "wkls_chain", exact = TRUE)
@@ -386,6 +470,7 @@ names.wkls_proxy <- function(x) {
 
   if (name %in% method_names) {
     # GEOMETRY METHODS
+    # REFACTOR REASON: Using helper function reduces repetitive closure creation
     if (name == "wkt") {
       return(.make_geometry_method(chain, "ST_AsText(geometry)"))
     } else if (name == "wkb") {
@@ -404,6 +489,7 @@ names.wkls_proxy <- function(x) {
     }
 
     # HELPER METHODS
+    # REFACTOR REASON: Similar validation patterns extracted into helper
     else if (name == "countries") {
       return(function() {
         if (length(chain) > 0) {
@@ -511,7 +597,14 @@ names.wkls_proxy <- function(x) {
   .make_wkls_proxy(new_chain)
 }
 
-#' [[ operator for wkls_proxy
+#' Double bracket operator for wkls_proxy
+#'
+#' Allows dictionary-style access and pattern matching with percent signs
+#'
+#' @param x A wkls_proxy object
+#' @param name Name to access (supports \% for pattern matching)
+#' @return A wkls_proxy object for regular lookups, or a data frame
+#'   when pattern matching is used (names containing \%)
 #' @export
 `[[.wkls_proxy` <- function(x, name) {
   chain <- attr(x, "wkls_chain", exact = TRUE)
@@ -542,7 +635,29 @@ names.wkls_proxy <- function(x) {
 # Package Exports
 # ============================================================================
 
-# Create the main wkls object
+#' Well-Known Locations Object
+#'
+#' The main entry point for accessing global administrative boundaries.
+#' Chain country, region, and city codes to retrieve geographical data.
+#'
+#' @format A wkls_proxy object
+#' @examples
+#' \donttest{
+#' # Get country geometry
+#' wkls$us$wkt()
+#'
+#' # Get region geometry
+#' wkls$us$ca$geojson()
+#'
+#' # Get city geometry
+#' wkls$us$ca$sanfrancisco$wkt()
+#'
+#' # List all countries
+#' wkls$countries()
+#'
+#' # List regions in a country
+#' wkls$us$regions()
+#' }
 #' @export
 wkls <- .make_wkls_proxy()
 

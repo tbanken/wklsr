@@ -4,9 +4,24 @@
 \alias{.resolve_chain}
 \title{Internal function to resolve a chain}
 \usage{
-.resolve_chain(chain)
+.resolve_chain(chain, is_pattern = FALSE)
 }
 \description{
 Internal function to resolve a chain
 }
+\keyword{REASON:}
+\keyword{REFACTOR}
+\keyword{Simplified}
+\keyword{and}
+\keyword{branching}
+\keyword{by}
+\keyword{check}
+\keyword{consistent}
+\keyword{dependency}
+\keyword{extracting}
 \keyword{internal}
+\keyword{logic}
+\keyword{parameter}
+\keyword{passing}
+\keyword{patterns.}
+\keyword{using}

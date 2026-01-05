@@ -6,6 +6,14 @@
 \usage{
 \method{print}{wkls_proxy}(x, ...)
 }
+\arguments{
+\item{x}{A wkls_proxy object}
+
+\item{...}{Additional arguments (unused)}
+}
+\value{
+Invisibly returns the resolved data frame
+}
 \description{
-Print method for wkls_proxy
+Prints the resolved data frame for a wkls_proxy chain
 }

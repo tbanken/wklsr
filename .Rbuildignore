@@ -1,2 +1,5 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^CONTRIBUTING\.md$
+^LICENSE\.md$
+^inst/extdata/overture\.zstd18\.parquet$

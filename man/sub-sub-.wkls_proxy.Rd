@@ -2,10 +2,19 @@
 % Please edit documentation in R/core.R
 \name{[[.wkls_proxy}
 \alias{[[.wkls_proxy}
-\title{[[ operator for wkls_proxy}
+\title{Double bracket operator for wkls_proxy}
 \usage{
 \method{[[}{wkls_proxy}(x, name)
 }
+\arguments{
+\item{x}{A wkls_proxy object}
+
+\item{name}{Name to access (supports \% for pattern matching)}
+}
+\value{
+A wkls_proxy object for regular lookups, or a data frame
+  when pattern matching is used (names containing \%)
+}
 \description{
-[[ operator for wkls_proxy
+Allows dictionary-style access and pattern matching with percent signs
 }

@@ -1,7 +1,7 @@
 Package: wklsr
 Type: Package
-Title: wklsr makes it easy to find global administrative boundaries — from countries to cities — using readable, chainable R syntax.
-Version: 0.1.0
+Title: Well-Known Locations in R
+Version: 0.2.2
 Authors@R: c(
     person(
       "Ted", "Banken",
@@ -9,13 +9,19 @@ Authors@R: c(
       role = c("aut", "cre")
     )
   )
-Description: It reads Overture Maps Foundation GeoParquet data (version 2025-09-24.0) directly from the AWS Open Data Registry.
-            It reads directly from GeoParquet data (version 2025-09-24.0) hosted on the AWS Open Data Registry.
-            You can instantly get geometries in formats like Well-known Text (WKT), Well-known Binaries (WKB), HexWKB, GeoJSON, and SVG
-License: What license is it under?
+Description: Makes it easy to find global administrative boundaries from 
+    countries to cities using readable, 'chainable' R syntax. Fetches geometries 
+    from Overture Maps Foundation data. Ported from <https://github.com/wherobots/wkls>.
+License: Apache License (>= 2)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.3
 Suggests: 
+    curl,
+    jsonlite,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Imports: 
+    DBI,
+    duckdb,
+    utils

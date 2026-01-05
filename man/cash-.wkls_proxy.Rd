@@ -2,10 +2,20 @@
 % Please edit documentation in R/core.R
 \name{$.wkls_proxy}
 \alias{$.wkls_proxy}
-\title{$ operator for wkls_proxy}
+\title{Dollar operator for wkls_proxy}
 \usage{
 \method{$}{wkls_proxy}(x, name)
 }
+\arguments{
+\item{x}{A wkls_proxy object}
+
+\item{name}{Name of attribute or method to access}
+}
+\value{
+Depends on usage: a wkls_proxy object for chaining, a function
+  for methods (wkt, wkb, etc.), or a data frame for helper methods
+  (countries, regions, etc.)
+}
 \description{
-$ operator for wkls_proxy
+Provides access to chaining attributes and methods
 }
