@@ -1,7 +1,5 @@
 # `wklsr`: Well-Known Locations for R
 
-[LICENSE](LICENCE.md)
-
 `wklsr` is the R port of [wkls](https://github.com/wherobots/wkls) and
 makes it easy to find global administrative boundaries — from countries
 to cities — using readable, chainable R syntax.
