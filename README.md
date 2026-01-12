@@ -1,4 +1,4 @@
-# `wklsr`: Well-Known Locations for R
+# `wklsr`: Well-Known Locations in R
 
 `wklsr` is the R port of [wkls](https://github.com/wherobots/wkls) and
 makes it easy to find global administrative boundaries — from countries
