@@ -183,8 +183,8 @@ The current Overture Maps dataset version can be checked with
 
 ## License
 
-This project is licensed under the Apache License 2.0 - see the
-[LICENSE](LICENCE) file for details. `wklsr` includes, references, and
+This project is licensed under the Apache License 2.0.
+`wklsr` includes, references, and
 leverages data from the "Divisions" theme of
 [Overture](https://overturemaps.org), from Overture Maps Foundation:
 
