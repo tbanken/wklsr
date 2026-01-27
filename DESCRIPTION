@@ -1,7 +1,7 @@
 Package: wklsr
 Type: Package
 Title: Well-Known Locations in R
-Version: 0.2.5
+Version: 0.2.6
 Authors@R: c(
     person(
       "Ted", "Banken",
